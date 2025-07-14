@@ -1,0 +1,1314 @@
+import tensorflow as tf
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split
+import pandas as pd
+import numpy as np
+
+# 读取数据集
+file_path = 'C:/Users/朱许杨/Desktop/毕业项目/压纹.xlsx'
+data = pd.read_excel(file_path)
+
+# 特征编码
+label_encoders = {}
+for column in ['子/母', '前板/后板', '孔型']:
+    label_encoders[column] = LabelEncoder()
+    data[column] = label_encoders[column].fit_transform(data[column])
+
+# 特征和目标变量
+features = ['厚度', '子/母', '前板/后板', '孔型']
+targets = ['A11', 'A12', 'A13', 'A14', 'A15', 'A21', 'A22', 'A23', 'A24', 'A25', 'A31', 'A32', 'A33', 'A34', 'A35',
+           'A41', 'A42', 'A43', 'A44', 'A45', 'A51', 'A52', 'A53', 'A54', 'A55', 'A56', 'A57', 'A58',
+           'A61', 'A62', 'A63', 'A64', 'A65', 'A66', 'A67', 'A68', 'A5补', 'A6补', 'B']
+
+# 划分训练集和测试集
+X_train, X_test, y_train, y_test = train_test_split(data[features], data[targets], test_size=0.2, random_state=42)
+
+# 转换为 NumPy 数组
+X_train_np = X_train.values
+y_train_np = y_train.values
+X_test_np = X_test.values
+y_test_np = y_test.values
+
+# 构建神经网络模型
+model = tf.keras.Sequential([
+    tf.keras.layers.Dense(64, activation='relu', input_shape=(len(features),)),
+    tf.keras.layers.Dense(32, activation='relu'),
+    tf.keras.layers.Dense(len(targets))
+])
+# 编译模型
+model.compile(optimizer='adam', loss='mse')
+
+# 训练模型
+model.fit(X_train_np, y_train_np, epochs=10000, verbose=1)
+
+# 用测试集评估模型
+test_loss = model.evaluate(X_test_np, y_test_np, verbose=0)
+print(f'Test Loss: {test_loss}')
+
+thickness_input = float(input("请输入厚度："))
+type_input = input("请输入子/母：")
+plate_input = input("请输入前板/后板：")
+hole_type_input = input("请输入孔型：")
+门体结构 = input("请输入门体结构: ")
+门面款式宽度 = float(input("请输入门面款式宽度: "))
+规格宽cm = float(input("请输入规格宽cm: "))
+板材长cm = float(input("请输入板材长cm: "))
+
+# 构建输入数据的 NumPy 数组
+input_data_np = np.array([[thickness_input, label_encoders["子/母"].transform([type_input])[0],
+                                   label_encoders["前板/后板"].transform([plate_input])[0],
+                                   label_encoders["孔型"].transform([hole_type_input])[0]]], dtype=np.float32)
+
+# 使用 TensorFlow 模型进行预测
+predicted_values = model.predict(input_data_np)[0]
+
+# 输出预测结果
+# print(f'预测的A11值:{predicted_values[0]}')
+# print(f"预测的A12值:{predicted_values[1]}")
+# print(f"预测的A13值:{predicted_values[2]}")
+# print(f"预测的A14值:{predicted_values[3]}")
+# print(f"预测的A15值:{predicted_values[4]}")
+# print(f'预测的A21值：{predicted_values[5]}')
+# print(f"预测的A22值: {predicted_values[6]}")
+# print(f"预测的A23值: {predicted_values[7]}")
+# print(f"预测的A24值: {predicted_values[8]}")
+# print(f"预测的A25值: {predicted_values[9]}")
+# print(f'预测的A31值：{predicted_values[10]}')
+# print(f"预测的A32值: {predicted_values[11]}")
+# print(f"预测的A33值: {predicted_values[12]}")
+# print(f"预测的A34值: {predicted_values[13]}")
+# print(f"预测的A35值: {predicted_values[14]}")
+# print(f'预测的A41值：{predicted_values[15]}')
+# print(f"预测的A42值: {predicted_values[16]}")
+# print(f"预测的A43值: {predicted_values[17]}")
+# print(f"预测的A44值: {predicted_values[18]}")
+# print(f"预测的A45值: {predicted_values[19]}")
+# print(f'预测的A51值：{predicted_values[20]}')
+# print(f"预测的A52值: {predicted_values[21]}")
+# print(f"预测的A53值: {predicted_values[22]}")
+# print(f"预测的A54值: {predicted_values[23]}")
+# print(f"预测的A55值: {predicted_values[24]}")
+# print(f"预测的A56值: {predicted_values[25]}")
+# print(f"预测的A57值: {predicted_values[26]}")
+# print(f"预测的A58值: {predicted_values[27]}")
+# print(f'预测的A61值：{predicted_values[28]}')
+# print(f"预测的A62值: {predicted_values[29]}")
+# print(f"预测的A63值: {predicted_values[30]}")
+# print(f"预测的A64值: {predicted_values[31]}")
+# print(f"预测的A65值: {predicted_values[32]}")
+# print(f"预测的A66值: {predicted_values[33]}")
+# print(f"预测的A67值: {predicted_values[34]}")
+# print(f"预测的A68值: {predicted_values[35]}")
+# print(f"预测的A5补值: {predicted_values[36]}")
+# print(f"预测的A6补值: {predicted_values[37]}")
+# print(f"预测的B值: {predicted_values[38]}")
+
+opening_direction = input("请输入开向：")
+
+def calculate_A(门面款式宽度, 门体结构, 规格宽cm, type_input, plate_input, opening_direction, predicted_values):
+    A = 0
+    if type_input == '子' and plate_input == '前板' and (opening_direction == '外左' or opening_direction == '外右'):
+        if 门体结构 == "子母门":
+            子门款式宽度 = float(input("请输入子门款式宽度: "))
+            花纹宽度 = float(input("请输入花纹宽度: "))
+            if 门面款式宽度 == 520:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 882 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 882 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 982 - 花纹宽度) / 2 + A22
+                        A = predicted_values[6] + (规格宽cm * 10 - 982 - 花纹宽度) / 2
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 872 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 872 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 972 - 花纹宽度) / 2 + A22
+                        A = predicted_values[6] + (规格宽cm * 10 - 972 - 花纹宽度) / 2
+            elif 门面款式宽度 == 526:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 882 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 882 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 982 - 花纹宽度) / 2 + A23
+                        A = predicted_values[7] + (规格宽cm * 10 - 982 - 花纹宽度) / 2
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 872 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 872 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 972 - 花纹宽度) / 2 + A23
+                        A = predicted_values[7] + (规格宽cm * 10 - 972 - 花纹宽度) / 2
+            elif 门面款式宽度 == 540:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 882 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 882 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 982 - 花纹宽度) / 2 + A24
+                        A = predicted_values[8] + (规格宽cm * 10 - 982 - 花纹宽度) / 2
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 872 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 872 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 972 - 花纹宽度) / 2 + A24
+                        A = predicted_values[8] + (规格宽cm * 10 - 972 - 花纹宽度) / 2
+            elif 门面款式宽度 == 550:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 882 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 882 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 982 - 花纹宽度) / 2 + A25
+                        A = predicted_values[9] + (规格宽cm * 10 - 982 - 花纹宽度) / 2
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A = (规格宽cm * 10 - 872 - 花纹宽度) / 2 + A21
+                        A = predicted_values[5] + (规格宽cm * 10 - 872 - 花纹宽度) / 2
+                    else:
+                        # A = (规格宽cm * 10 - 972 - 花纹宽度) / 2 + A25
+                        A = predicted_values[9] + (规格宽cm * 10 - 972 - 花纹宽度) / 2
+        elif 门体结构 == "对开门":
+            封板结构 = input("请输入封板结构: ")
+            if 封板结构 == "无":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 1720:
+                        # A = (规格宽cm * 5 - 570) / 2 + A32
+                        A = predicted_values[11] + (规格宽cm * 5 - 570) / 2
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 1740:
+                        # A = (规格宽cm * 5 - 576) / 2 + A33
+                        A = predicted_values[12] + (规格宽cm * 5 - 576) / 2
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 1760:
+                        # A = (规格宽cm * 5 - 590) / 2 + A34
+                        A = predicted_values[13] + (规格宽cm * 5 - 590) / 2
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 1780:
+                        # A = (规格宽cm * 5 - 600) / 2 + A35
+                        A = predicted_values[14] + (规格宽cm * 5 - 600) / 2
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+            elif 封板结构 == "左边封板" or 封板结构 == "右边封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A55
+                        A = predicted_values[24]
+                    else:
+                        # A = A51
+                        A = predicted_values[20]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A56
+                        A = predicted_values[25]
+                    else:
+                        # A = A52
+                        A = predicted_values[21]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A57
+                        A = predicted_values[26]
+                    else:
+                        # A = A53
+                        A = predicted_values[22]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A58
+                        A = predicted_values[27]
+                    else:
+                        # A = A54
+                        A = predicted_values[23]
+            elif 封板结构 == "两边封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A65
+                        A = predicted_values[32]
+                    else:
+                        # A = A61
+                        A = predicted_values[28]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A65
+                        A = predicted_values[33]
+                    else:
+                        # A = A62
+                        A = predicted_values[29]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A67
+                        A = predicted_values[34]
+                    else:
+                        # A = A63
+                        A = predicted_values[30]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A68
+                        A = predicted_values[35]
+                    else:
+                        # A = A64
+                        A = predicted_values[31]
+        elif 门体结构 == "三开子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A55
+                    A = predicted_values[24]
+                else:
+                    # A = A51
+                    A = predicted_values[20]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A56
+                    A = predicted_values[25]
+                else:
+                    # A = A52
+                    A = predicted_values[21]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A57
+                    A = predicted_values[26]
+                else:
+                    # A = A53
+                    A = predicted_values[22]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A58
+                    A = predicted_values[27]
+                else:
+                    # A = A54
+                    A = predicted_values[23]
+        elif 门体结构 == "四开子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A65
+                    A = predicted_values[32]
+                else:
+                    # A = A61
+                    A = predicted_values[28]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A66
+                    A = predicted_values[33]
+                else:
+                    # A = A62
+                    A = predicted_values[29]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A67
+                    A = predicted_values[34]
+                else:
+                    # A = A63
+                    A = predicted_values[30]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A68
+                    A = predicted_values[35]
+                else:
+                    # A = A64
+                    A = predicted_values[31]
+    elif type_input == '母' and plate_input == '前板' and (opening_direction == '外左' or opening_direction == '外右'):
+        if 门体结构 == "单门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 880:
+                    # A = (规格宽cm * 10 + A12 -520) / 2 + 12
+                    A = (规格宽cm * 10 + predicted_values[1] - 520) / 2 + 12
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 900:
+                    # A = (规格宽cm * 10 + A13 -526) / 2 + 12
+                    A = (规格宽cm * 10 + predicted_values[2] - 526) / 2 + 12
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 900:
+                    # A = (规格宽cm * 10 + A14 -540) / 2 + 12
+                    A = (规格宽cm * 10 + predicted_values[3] - 540) / 2 + 12
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 910:
+                    # A = (规格宽cm * 10 + A15 -550) / 2 + 12
+                    A = (规格宽cm * 10 + predicted_values[4] - 550) / 2 + 12
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+        elif 门体结构 == "子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A22
+                    A = predicted_values[6]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A23
+                    A = predicted_values[7]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A24
+                    A = predicted_values[8]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A25
+                    A = predicted_values[9]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+        elif 门体结构 == "对开门":
+            封板结构 = input("请输入封板结构: ")
+            if 封板结构 == "无":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 1720:
+                        # A = (规格宽cm * 5 + A32 - 520) / 2 + 12
+                        A = (规格宽cm * 5 + predicted_values[11] - 520) / 4 + 12
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 1740:
+                        # A = (规格宽cm * 5 + A33 - 526) / 2 + 12
+                        A = (规格宽cm * 5 + predicted_values[12] - 526) / 4 + 12
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 1760:
+                        # A = (规格宽cm * 5 + A34 - 540) / 2 + 12
+                        A = (规格宽cm * 5 + predicted_values[13] - 540) / 4 + 12
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 1780:
+                        # A = (规格宽cm * 5 + A35 - 550) / 2 + 12
+                        A = (规格宽cm * 5 + predicted_values[14] - 550) / 4 + 12
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+            elif 封板结构 == "中间封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A42
+                        A = predicted_values[16]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A43
+                        A = predicted_values[17]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A44
+                        A = predicted_values[18]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A45
+                        A = predicted_values[19]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+            elif 封板结构 == "左边封板" or 封板结构 == "右边封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A55
+                        A = predicted_values[24]
+                    else:
+                        # A = A51
+                        A = predicted_values[20]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A56
+                        A = predicted_values[25]
+                    else:
+                        # A = A52
+                        A = predicted_values[21]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A57
+                        A = predicted_values[26]
+                    else:
+                        # A = A53
+                        A = predicted_values[22]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A59
+                        A = predicted_values[27]
+                    else:
+                        # A = A54
+                        A = predicted_values[23]
+            elif 封板结构 == "两边封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A65
+                        A = predicted_values[32]
+                    else:
+                        # A = A61
+                        A = predicted_values[28]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A66
+                        A = predicted_values[33]
+                    else:
+                        # A = A62
+                        A = predicted_values[29]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A67
+                        A = predicted_values[34]
+                    else:
+                        # A = A63
+                        A = predicted_values[30]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A68
+                        A = predicted_values[35]
+                    else:
+                        # A = A64
+                        A = predicted_values[31]
+        elif 门体结构 == "三开子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A55
+                    A = predicted_values[24]
+                else:
+                    # A = A51
+                    A = predicted_values[20]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A56
+                    A = predicted_values[25]
+                else:
+                    # A = A52
+                    A = predicted_values[21]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A57
+                    A = predicted_values[26]
+                else:
+                    # A = A53
+                    A = predicted_values[22]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A59
+                    A = predicted_values[27]
+                else:
+                    # A = A54
+                    A = predicted_values[23]
+        elif 门体结构 == "四开子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A65
+                    A = predicted_values[32]
+                else:
+                    # A = A61
+                    A = predicted_values[28]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A66
+                    A = predicted_values[33]
+                else:
+                    # A = A62
+                    A = predicted_values[29]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A67
+                    A = predicted_values[34]
+                else:
+                    # A = A63
+                    A = predicted_values[30]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A68
+                    A = predicted_values[35]
+                else:
+                    # A = A64
+                    A = predicted_values[31]
+    elif type_input == '母' and plate_input == '后板' and (opening_direction == '内左' or opening_direction == '内右'):
+        if 门体结构 == "单门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 880:
+                    # A = (规格宽cm * 10 + A12 - 520) / 2 - 17.5
+                    A = (规格宽cm * 10 + predicted_values[1] - 520) / 2 - 17.5
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 900:
+                    # A = (规格宽cm * 10 + A13 - 526) / 2 - 17.5
+                    A = (规格宽cm * 10 + predicted_values[2] - 526) / 2 - 17.5
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 900:
+                    # A = (规格宽cm * 10 + A14 - 540) / 2 - 17.5
+                    A = (规格宽cm * 10 + predicted_values[3] - 540) / 2 - 17.5
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 910:
+                    # A = (规格宽cm * 10 + A15 - 550) / 2 - 17.5
+                    A = (规格宽cm * 10 + predicted_values[4] - 550) / 2 - 17.5
+                else:
+                    # A = A11
+                    A = predicted_values[0]
+        elif 门体结构 == "子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A22
+                    A = predicted_values[6]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A23
+                    A = predicted_values[7]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A24
+                    A = predicted_values[8]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 1250:
+                    # A = A25
+                    A = predicted_values[9]
+                else:
+                    # A = A21
+                    A = predicted_values[5]
+        elif 门体结构 == "对开门":
+            封板结构 = input("请输入封板结构: ")
+            if 封板结构 == "无":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 1720:
+                        # A = (规格宽cm * 10 ) / 4 + A32 / 2 -17.5 - 260
+                        A = predicted_values[11] / 2 + (规格宽cm * 10) / 4 - 17.5 - 260
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 1740:
+                        # A = (规格宽cm * 10 ) / 4 + A33 / 2 -17.5 - 263
+                        A = predicted_values[12] / 2 + (规格宽cm * 10) / 4 - 17.5 - 263
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 1760:
+                        # A = (规格宽cm * 10 ) / 4 + A34 / 2 -17.5 - 270
+                        A = predicted_values[13] / 2 + (规格宽cm * 10) / 4 - 17.5 - 270
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 1780:
+                        # A = (规格宽cm * 10 ) / 4 + A35 / 2 -17.5 - 275
+                        A = predicted_values[14] / 2 + (规格宽cm * 10) / 4 - 17.5 - 275
+                    else:
+                        # A = A31
+                        A = predicted_values[10]
+            elif 封板结构 == "中间封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A42
+                        A = predicted_values[16]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A43
+                        A = predicted_values[17]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A44
+                        A = predicted_values[18]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2120:
+                        # A = A45
+                        A = predicted_values[19]
+                    else:
+                        # A = A41
+                        A = predicted_values[15]
+            elif 封板结构 == "左边封板" or 封板结构 == "右边封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A55
+                        A = predicted_values[24]
+                    else:
+                        # A = A51
+                        A = predicted_values[20]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A56
+                        A = predicted_values[25]
+                    else:
+                        # A = A52
+                        A = predicted_values[21]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A57
+                        A = predicted_values[26]
+                    else:
+                        # A = A53
+                        A = predicted_values[22]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A58
+                        A = predicted_values[27]
+                    else:
+                        # A = A54
+                        A = predicted_values[23]
+            elif 封板结构 == "两边封板":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A65
+                        A = predicted_values[32]
+                    else:
+                        # A = A61
+                        A = predicted_values[28]
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A66
+                        A = predicted_values[33]
+                    else:
+                        # A = A62
+                        A = predicted_values[29]
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A67
+                        A = predicted_values[34]
+                    else:
+                        # A = A63
+                        A = predicted_values[30]
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A68
+                        A = predicted_values[35]
+                    else:
+                        # A = A64
+                        A = predicted_values[31]
+        elif 门体结构 == "三开子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A55
+                    A = predicted_values[24]
+                else:
+                    # A = A51
+                    A = predicted_values[20]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A56
+                    A = predicted_values[25]
+                else:
+                    # A = A52
+                    A = predicted_values[21]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A57
+                    A = predicted_values[26]
+                else:
+                    # A = A53
+                    A = predicted_values[22]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 2130:
+                    # A = A58
+                    A = predicted_values[27]
+                else:
+                    # A = A54
+                    A = predicted_values[23]
+        elif 门体结构 == "四开子母门":
+            if 门面款式宽度 == 520:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A65
+                    A = predicted_values[32]
+                else:
+                    # A = A61
+                    A = predicted_values[28]
+            elif 门面款式宽度 == 526:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A66
+                    A = predicted_values[33]
+                else:
+                    # A = A62
+                    A = predicted_values[29]
+            elif 门面款式宽度 == 540:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A67
+                    A = predicted_values[34]
+                else:
+                    # A = A63
+                    A = predicted_values[30]
+            elif 门面款式宽度 == 550:
+                if 规格宽cm * 10 >= 2400:
+                    # A = A68
+                    A = predicted_values[35]
+                else:
+                    # A = A64
+                    A = predicted_values[31]
+    elif type_input == '子' and plate_input == '后板' and (opening_direction == '内左' or opening_direction == '内右'):
+        if 门体结构 == "子母门":
+            子门款式宽度 = float(input("请输入子门款式宽度: "))
+            板材宽 = float(input("请输入板材宽: "))
+            花纹宽度 = float(input("请输入花纹宽度: "))
+            if 门面款式宽度 == 520:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 860 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 860 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 960 - 花纹宽度) / 2 + A22  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[6] + (规格宽cm * 10 - 960 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 850 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 850 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 950 - 花纹宽度) / 2 + A22  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[6] + (规格宽cm * 10 - 950 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 526:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 860 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 860 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 960 - 花纹宽度) / 2 + A23  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[7] + (规格宽cm * 10 - 960 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 850 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 850 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 950 - 花纹宽度) / 2 + A23  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[7] + (规格宽cm * 10 - 950 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 540:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 860 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 860 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 960 - 花纹宽度) / 2 + A24  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[8] + (规格宽cm * 10 - 960 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 850 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 850 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 950 - 花纹宽度) / 2 + A24  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[8] + (规格宽cm * 10 - 950 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 550:
+                if 子门款式宽度 <= 230:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 860 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 860 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 960 - 花纹宽度) / 2 + A25  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[9] + (规格宽cm * 10 - 960 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 < 1250:
+                        # A0 = (规格宽cm * 10 - 850 - 花纹宽度) / 2 + A21  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[5] + (规格宽cm * 10 - 850 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A0 = (规格宽cm * 10 - 950 - 花纹宽度) / 2 + A25  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[9] + (规格宽cm * 10 - 950 - 花纹宽度) / 2
+                        A = 板材宽 - 花纹宽度 - A0
+        elif 门体结构 == "对开门":
+            封板结构 = input("请输入封板结构: ")
+            花纹宽度 = float(input("请输入花纹宽度: "))
+            板材宽 = float(input("请输入板材宽: "))
+            if 封板结构 == "无":
+                if 门面款式宽度 == 520:
+                    if 规格宽cm * 10 >= 1720:
+                        # A = (规格宽cm * 10 - 116) / 4 + A32 - 260  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[11] + (规格宽cm * 10 - 116) / 4 - 260
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = (规格宽cm * 10 - 100) / 2 - 665 + A31  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[10] + (规格宽cm * 10 - 100) / 2 - 665
+                        A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 526:
+                    if 规格宽cm * 10 >= 1740:
+                        # A = (规格宽cm * 10 - 116) / 4 + A33 - 263  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[12] + (规格宽cm * 10 - 116) / 4 - 263
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = (规格宽cm * 10 - 100) / 2 - 671 + A31  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[10] + (规格宽cm * 10 - 116) / 2 - 671
+                        A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 540:
+                    if 规格宽cm * 10 >= 1760:
+                        # A = (规格宽cm * 10 - 116) / 4 + A34 - 270  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[13] + (规格宽cm * 10 - 116) / 4 - 270
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = (规格宽cm * 10 - 100) / 2 - 685 + A31  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[10] + (规格宽cm * 10 - 116) / 2 - 685
+                        A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 550:
+                    if 规格宽cm * 10 >= 1780:
+                        # A = (规格宽cm * 10 - 116) / 4 + A35 - 275  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[14] + (规格宽cm * 10 - 116) / 4 - 275
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = (规格宽cm * 10 - 100) / 2 - 695 + A31  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[10] + (规格宽cm * 10 - 116) / 2 - 695
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 封板结构 == "左边封板" or 封板结构 == "右边封板":
+                子门款式宽度 = float(input("请输入子门款式宽度: "))
+                if 门面款式宽度 == 520:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A55  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[24]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A51  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[20]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A55  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[24]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 1930:
+                            # A = 107 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 107 - 965 + 规格宽cm * 5 + predicted_values[36]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A51  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[20]
+                            A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 526:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A56  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[25]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A52  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[21]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A56  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[25]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 1930:
+                            # A = 101 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 101 - 965 + 规格宽cm * 5 + predicted_values[36]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A52  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[21]
+                            A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 540:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A57  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[26]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A53  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[22]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A57  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[26]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 1930:
+                            # A = 87 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 87 - 965 + 规格宽cm * 5 + predicted_values[36]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A53  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[22]
+                            A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 550:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A58  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[27]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A54  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[23]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2130:
+                            # A = A58  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[27]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 1930:
+                            # A = 77 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 77 - 965 + 规格宽cm * 5 + predicted_values[36]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A54  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[23]
+                            A = 板材宽 - 花纹宽度 - A0
+            elif 封板结构 == "两边封板":
+                子门款式宽度 = float(input("请输入子门款式宽度: "))
+                if 门面款式宽度 == 520:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A65  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[32]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A61  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[28]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A65  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[32]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 2200:
+                            # A = 95 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 95 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A61  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[28]
+                            A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 526:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A66  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[33]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A62  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[29]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A66  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[33]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 2200:
+                            # A = 89 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 89 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A62  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[29]
+                            A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 540:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A67  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[34]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A63  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[30]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A67  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[34]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 2200:
+                            # A = 75 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 75 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A63  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[30]
+                            A = 板材宽 - 花纹宽度 - A0
+                elif 门面款式宽度 == 550:
+                    if 子门款式宽度 < 220:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A68  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[35]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A64  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[31]
+                            A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        if 规格宽cm * 10 >= 2400:
+                            # A = A68  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[35]
+                            A = 板材宽 - 花纹宽度 - A0
+                        elif 规格宽cm * 10 < 2200:
+                            # A = 65 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                            A0 = 65 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                            A = 板材宽 - 花纹宽度 - A0
+                        else:
+                            # A = A64  A = 板材宽 - 花纹宽度 - A0
+                            A0 = predicted_values[31]
+                            A = 板材宽 - 花纹宽度 - A0
+        elif 门体结构 == "三开子母门":
+            子门款式宽度 = float(input("请输入子门款式宽度: "))
+            花纹宽度 = float(input("请输入花纹宽度: "))
+            板材宽 = float(input("请输入板材宽: "))
+            if 门面款式宽度 == 520:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A55  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[24]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A51  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[20]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A55  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[24]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 1930:
+                        # A = 107 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 107 - 965 + 规格宽cm * 5 + predicted_values[36]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A51  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[20]
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 526:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A56  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[25]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A52  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[21]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A56  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[25]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 1930:
+                        # A = 101 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 101 - 965 + 规格宽cm * 5 + predicted_values[36]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A52  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[21]
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 540:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A57  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[26]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A53 A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[22]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A57  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[26]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 1930:
+                        # A = 87 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 87 - 965 + 规格宽cm * 5 + predicted_values[36]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A53  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[22]
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 550:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A58  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[27]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A54  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[23]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2130:
+                        # A = A58  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[27]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 1930:
+                        # A = 77 - 965 + 规格宽cm * 5 + A5补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 77 - 965 + 规格宽cm * 5 + predicted_values[36]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A54  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[23]
+                        A = 板材宽 - 花纹宽度 - A0
+        elif 门体结构 == "四开子母门":
+            子门款式宽度 = float(input("请输入子门款式宽度: "))
+            花纹宽度 = float(input("请输入花纹宽度: "))
+            板材宽 = float(input("请输入板材宽: "))
+            if 门面款式宽度 == 520:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A65  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[32]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A61  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[28]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A65  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[32]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 2200:
+                        # A = 95 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 95 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A61  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[28]
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 526:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A66  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[33]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A62  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[29]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A66  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[33]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 2200:
+                        # A = 89 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 89 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A62  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[29]
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 540:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A67  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[34]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A63  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[30]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A67  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[34]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 2200:
+                        # A = 75 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 75 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A63  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[30]
+                        A = 板材宽 - 花纹宽度 - A0
+            elif 门面款式宽度 == 550:
+                if 子门款式宽度 < 220:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A68  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[35]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A64  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[31]
+                        A = 板材宽 - 花纹宽度 - A0
+                else:
+                    if 规格宽cm * 10 >= 2400:
+                        # A = A68  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[35]
+                        A = 板材宽 - 花纹宽度 - A0
+                    elif 规格宽cm * 10 < 2200:
+                        # A = 65 - 1100 + 规格宽cm * 5 + A6补  A = 板材宽 - 花纹宽度 - A0
+                        A0 = 65 - 1100 + 规格宽cm * 5 + predicted_values[37]
+                        A = 板材宽 - 花纹宽度 - A0
+                    else:
+                        # A = A64  A = 板材宽 - 花纹宽度 - A0
+                        A0 = predicted_values[31]
+                        A = 板材宽 - 花纹宽度 - A0
+    return A
+
+A_result= calculate_A(门面款式宽度, 门体结构, 规格宽cm, type_input, plate_input, opening_direction, predicted_values)
+
+def calculate_B(板材长cm, type_input, plate_input, opening_direction, predicted_values):
+    花纹长度 = float(input("请输入花纹长度: "))
+    if type_input == '子' and (opening_direction == '外左' or opening_direction == '外右') and plate_input == '前板':
+        B = (板材长cm - predicted_values[38] -花纹长度) / 2
+    elif type_input == '子' and (opening_direction == '内左' or opening_direction == '内右') and plate_input == '后板':
+        B = (板材长cm - predicted_values[38] -花纹长度) / 2
+    elif type_input == '母' and (opening_direction == '外左' or opening_direction == '外右') and plate_input == '前板':
+        B = (板材长cm - predicted_values[38] -花纹长度) / 2
+    elif type_input == '母' and (opening_direction == '内左' or opening_direction == '内右') and plate_input == '后板':
+        B = (板材长cm - predicted_values[38] -花纹长度) / 2
+    else:
+        B = predicted_values[38]
+    return B
+
+B_result = calculate_B(板材长cm, type_input, plate_input, opening_direction, predicted_values)
+
+print(f"压纹A的值为: {A_result}")
+print(f"压纹B的值为: {B_result}")
